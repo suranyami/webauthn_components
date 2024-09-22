@@ -81,6 +81,8 @@ defmodule WebauthnComponents.AuthenticationComponent do
         <span :if={@show_icon?} class="w-4 aspect-square opacity-70"><.icon_key /></span>
         <span><%= @display_text %></span>
       </.button>
+
+      <input type="hidden" autocomplete="webauthn" />
     </span>
     """
   end
@@ -139,7 +141,7 @@ defmodule WebauthnComponents.AuthenticationComponent do
 
     challenge =
       Wax.new_authentication_challenge(
-        origin: endpoint.url,
+        origin: endpoint.url(),
         rp_id: :auto,
         user_verification: "preferred"
       )

@@ -11,12 +11,28 @@ defmodule WebauthnComponents.RegistrationComponentTest do
     {:ok, view, _html} = live_isolated_component(RegistrationComponent, assigns)
     live_assign(view, app: assigns.app, id: assigns.id)
     element = element(view, "##{assigns.id}")
-    %{view: view, element: element}
+    %{view: view, element: element, default_assigns: assigns}
   end
 
   describe "render/1" do
     test "returns element with id and phx hook", %{view: view} do
       assert has_element?(view, "##{@id}[phx-hook='RegistrationHook']")
+    end
+  end
+
+  describe "update/2" do
+    test "updates `disabled` assign", setup_attrs do
+      %{default_assigns: default_assigns} = setup_attrs
+      assigns = Map.merge(default_assigns, %{disabled: true})
+      {:ok, view, _html} = live_isolated_component(RegistrationComponent, assigns)
+      assert has_element?(view, "##{assigns.id}[disabled]")
+    end
+
+    test "is not `disabled` by default", setup_attrs do
+      %{default_assigns: assigns} = setup_attrs
+      {:ok, view, _html} = live_isolated_component(RegistrationComponent, assigns)
+      assert has_element?(view, "##{assigns.id}")
+      refute has_element?(view, "##{assigns.id}[disabled]")
     end
   end
 
@@ -33,9 +49,10 @@ defmodule WebauthnComponents.RegistrationComponentTest do
       assert clicked_element =~ "<button"
       assert clicked_element =~ "phx-click=\"register\""
 
-      # TODO 1/10/2023
-      # Assert event was pushed to client
-      # Not supported by Phoenix.LiveViewTest or LiveIsolatedComponent
+      assert_push_event(view, "registration-challenge", %{
+        id: "registration-component",
+        user: ^webauthn_user
+      })
     end
   end
 
